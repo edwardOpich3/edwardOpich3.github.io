@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="en" style="height: 100%">
+
+<head>
+	<meta charset="utf-8">
+	<title>Table</title>
+	<style>
+		html, body
+		{
+			width: 100%;
+			background-color: white;
+			margin: 0%;
+			overflow: auto;
+		}
+		#wrapper
+		{
+			width: 80%;
+			min-width: 324px;
+			margin: 0px auto;
+			background-color: #CCC;
+			padding: 8px;
+			overflow: hidden;
+		}
+		#wrapper div *
+		{
+			margin: 8px auto;
+		}
+		#title
+		{
+			background-color: white;
+			margin-bottom: 8px;
+			min-width: 324px;
+		}
+		header
+		{
+			margin: 0px;
+			padding: 0px;
+			text-align: center;
+			font-weight: bold;
+			font-size: 32px;
+			border: 2px solid black;
+		}
+		#left
+		{
+			/*display: inline-block;*/
+			background-color: #99F;
+			width: 49%;
+			min-width: 324px;
+			float: left;
+			/*clear: right;*/
+			margin-right: 2%;
+		}
+		#right
+		{
+			/*display: inline-block;*/
+			background-color: #F99;
+			width: 49%;
+			min-width: 324px;
+			float: left;
+			/*clear: right;*/
+		}
+		#MainTable
+		{
+			width: 100%;
+			border: 2px solid black;
+			background-color: white;
+			text-align: center;
+		}
+		.MainHeader
+		{
+			background-color: black;
+			color: white;
+			font-weight: bold;
+		}
+		.SubHeader
+		{
+			background-color: #D0D0D0;
+			font-weight: bold;
+		}
+		td
+		{
+			padding: 4px;
+			border: 2px solid black;
+		}
+		th
+		{
+			padding: 4px;
+			border: 2px solid black;
+		}
+		.picture
+		{
+			/*width: 80%;*/
+			text-align: center;
+			font-size: 12px;
+			/*clear: right;*/
+		}
+		img
+		{
+			background-color: white;
+			display: block;
+			margin: 0px auto;
+			border: 2px solid black;
+		}
+		#footer
+		{
+			display: block;
+			clear: left;
+		}
+		footer
+		{
+			font-style: italic;
+			text-align: center;
+		}
+	</style>
+</head>
+
+<body style="height: 100%">
+<div id="wrapper">
+	<div id="title">
+		<header>Edward Opich's Interests</header>
+	</div>
+	<div id="left">
+		<table id="MainTable">
+			<tr>
+				<th colspan="3" class="MainHeader">My Interests</th>
+			</tr>
+			<tr>
+				<th class="SubHeader">School</th>
+				<th class="SubHeader">Hobbies</th>
+				<th class="SubHeader">Other</th>
+			</tr>
+			<tr>
+				<td>Mathematics</td>
+				<td>Video Games</td>
+				<td>Cooking</td>
+			</tr>
+			<tr>
+				<td>Game Programming</td>
+				<td>Bass Guitar</td>
+				<td>Snowboarding</td>
+			</tr>
+			<tr>
+				<td>3D Modeling</td>
+				<td>Drawing</td>
+				<td>Stargazing</td>
+			</tr>
+		</table>
+		<p>Those are some of my interests. Regardless of how often or under what context I do things involving them,
+		I enjoy them all a lot! Now here's a picture of me that I totally didn't recycle from the index.</p>
+		<div class="picture">
+			<img src="../media/Ed.bmp" alt="A picture of me, the same as the one from the index." />
+		</div>
+	</div>
+	<div id="right">
+		<p>Every single one of those interests I've been into for at least a year.
+		The earliest one is definitely Video Games, followed closely by Mathematics.
+		It's hard to say what the most recent one is; 3D Modeling, Bass Guitar, and Snowboarding
+		all became interests around the same time, back in 2011.</p>
+		<div class="picture">
+			<img src="../media/bass.png" alt="An image of a cartoon bass." />
+			<a href="http://cliparts.co">Clip art image by Cliparts.co</a>
+		</div>
+	</div>
+	<div id="footer">
+		<footer>&copy;Edward Opich 2016</footer>
+	</div>
+</div>
+</body>
+
+</html>

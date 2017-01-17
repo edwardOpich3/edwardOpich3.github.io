@@ -1,0 +1,12 @@
+body
+{
+	background-color: #002200;
+	text-align: center;
+}
+
+svg
+{
+	background-color: white;
+	border: 1px solid black;
+	margin: 128px;
+}

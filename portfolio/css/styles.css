@@ -1,0 +1,86 @@
+/* Website */
+html
+{
+	background-color: #220670;
+}
+
+body
+{
+	font-family: 'consolas';
+	color: #000;
+}
+
+a
+{
+	color: #0072A6;
+}
+a:hover
+{
+	color: #60C1FF;
+}
+
+/* Header */
+#header
+{
+	background-color: white;
+	border: 1px solid black;
+	padding: 0.5%;
+	font-family: 'VT323', monospace;
+}
+
+#header div
+{
+	text-align: center;
+}
+
+/* Navigation */
+#navigation
+{
+	border: 1px solid black;
+	background-color: #FF9700;
+}
+
+#navigation div
+{
+	border: 1px solid black;
+	text-align: center;
+}
+
+#navigation div a
+{
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+#navigation div:nth-child(odd) a
+{
+	background-color: #FF4B00;
+}
+
+#navigation div:nth-child(even) a
+{
+	background-color: #FFCD00;
+}
+
+/* Content */
+.content
+{
+	background-color: #FF9700;
+	border: 1px solid black;
+	padding: 2%;
+}
+
+.content h2
+{
+	text-align: center;
+}
+
+/* Footer */
+.footer
+{
+	text-align: center;
+	font-style: italic;
+	font-weight: bold;
+	color: white;
+}

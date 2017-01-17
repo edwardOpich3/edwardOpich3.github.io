@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Presentational Stuff -->
+	<link href='http://fonts.googleapis.com/css?family=Spirax' rel='stylesheet' type='text/css'>
+	<style type="text/css">
+	*{
+		font-family: Spirax;
+		margin:0;padding:0;
+	}
+	
+	body{
+		padding-bottom:3em;
+		min-width: 1000px;
+	}
+	
+	p{
+		margin: .5em 1em;
+	}
+	q{
+		font-weight:bold;
+		font-size:125%;
+	}
+	
+	header{
+		font-size:3.0em;
+		background-color: #940007;
+		text-align:center;
+		padding:0.5em;
+		color:#c97d00;
+	}
+	
+	h2{
+		margin-left:.5em;
+	}
+	
+	section{
+		width:72%;
+		float:left;
+	}
+	
+	article{
+	margin-bottom:2em;
+	}
+	
+	aside{
+		float:right;
+		width:25%;
+		background-color: #120100;
+		color:white;
+	}
+	
+	footer{
+		background-color: #c97d00;
+		clear:both;
+		text-align:center;
+	}
+	
+	#calculator input{
+		font-size:100%;
+	}
+	
+	#results{
+		font-weight:bold;
+		font-size:110%;
+		margin-top: 2em;
+	}
+	</style>
+	<meta charset="utf-8" />
+	<title>HP Calculator</title>
+	
+	<!-- Code! -->
+	<script>
+		// 1) Call init() when window loads - use window.onload = 
+		window.onload = init;
+		
+		function init(){
+			console.log("init called");
+			// 2) hook up 3 event handlers for when form fields "onchange" (or when there is a "onkeyup" or "onkeydown") - call calculate() when they do.
+			var forms = document.getElementsByTagName("input");
+			for(var i = 0; i < 3; i++)
+			{
+				forms[i].onchange = calculate;
+				forms[i].onkeyup = calculate;
+				forms[i].onkeydown = calculate;
+			}
+			
+			calculate();
+		}
+		
+		function calculate(){
+			console.log("calculate called");
+			
+			// 3) grab values of all 3 form fields and store in variables
+			var galleons = parseFloat(document.querySelector('#galleons').value);
+			var sickles = parseFloat(document.querySelector('#sickles').value);
+			var knuts = parseFloat(document.querySelector('#knuts').value);
+			
+			
+			// 4) call isNaN() on galleons, sickles, and knuts and assign value of zero if necessary
+			if (isNaN(galleons)) galleons=0;
+			if (isNaN(sickles)) sickles=0;
+			if (isNaN(knuts)) knuts=0;
+			
+			
+			// 5) Calculate results!
+			// here are the 2 formula lines to uncomment
+			var pounds = (galleons * 5.00 ) + (sickles * 0.29) + (knuts * .01);
+			pounds = pounds.toFixed(2);
+			
+			
+			// 6) now assign results to "#results" paragraph so that user can see - use innerHTML
+			document.querySelector('#results').innerHTML = "£" + pounds;
+			
+			
+			
+			/*
+				Test Data
+				Galleons:15  Sickles:25  Knuts:11
+
+				Results: £82.36
+			
+			*/
+		}
+	</script>
+</head>
+<body>
+<header>Harry Potter Calculator</header>
+<aside>
+<h2>Approximate<br>Exchange<br>Rate</h2>
+<p>1 bronze Knut = £0.01<br>
+
+1 silver Sickle = £0.29<br>
+
+1 Galleon = £5.00<br>
+</p>
+</aside>
+<section>
+	<article>
+		<p><q>The gold ones are Galleons. Seventeen silver Sickles to a Galleon and twenty-nine Knuts to a Sickle, it's easy enough.</q> - Rubeus Hagrid</p>
+		<p>Therefore 1 Galleon = 17 Sickles = 493 Knuts.</p>
+	</article>
+	
+	<article id="calculator">
+		<h2>Calculator</h2>
+		<p>
+  			Galleons: <input type="text" id="galleons" value="5" />
+  			Sickles: <input type="text" id="sickles" value="0" />
+   			Knuts: <input type="text" id="knuts" value="0" />
+   		</p>
+   		<p id="results">Results:  £0.00</p>
+   </article>
+</section>
+
+<footer><a href="http://www.hp-lexicon.org/wizworld/money.html">Source: http://www.hp-lexicon.org/wizworld/money.html</a></footer>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	
+	<meta charset="utf-8" />
+	<title>Simple Calculator</title>
+	<script>
+		window.onload = init;
+		
+		function init(){
+			console.log("init called");
+			
+			var calcButton = document.querySelector("#calcButton");
+			calcButton.onclick = calculate;
+			
+			var multButton = document.querySelector("#multButton");
+			multButton.onclick = multiply;
+		}
+		
+		function calculate(){
+			console.log("calculate called");
+			// parseFloat() changes the value of the form field from a String to a Number
+			var num1 = parseFloat(document.querySelector('#num1').value);
+			// isNaN() is used to see if a value is "Not a Number"
+			// if it's not a number, we'll make it zero
+			if (isNaN(num1)) num1=0;
+			
+			var num2 = parseFloat(document.querySelector('#num2').value);
+			if (isNaN(num2)) num2=0;
+			
+			var num3 = parseFloat(document.querySelector('#num3').value);
+			if (isNaN(num3)) num3=0;
+			
+			var sum = num1 + num2 + num3;
+			document.querySelector('#results').innerHTML = sum;
+		}
+		
+		function multiply()
+		{
+			console.log("multiply called");
+			
+			var num1 = parseFloat(document.querySelector('#num1').value);
+			if (isNaN(num1)) num1=0;
+			
+			var num2 = parseFloat(document.querySelector('#num2').value);
+			if (isNaN(num2)) num2=0;
+			
+			var num3 = parseFloat(document.querySelector('#num3').value);
+			if (isNaN(num3)) num3=0;
+			
+			var product = num1 * num2 * num3;
+			document.querySelector('#results').innerHTML = product;
+		}
+		
+	</script>
+</head>
+<body>
+<header>Simple Calculator</header>
+
+<section>
+
+		<p>
+  			Number 1: <input type="text" id="num1" value="0" /> 
+  			Number 2: <input type="text" id="num2" value="0" />
+			Number 3: <input type="text" id="num3" value="0" />
+   		</p>
+   		<p>
+  			<button id="calcButton">Add them Up!</button>
+			<button id="multButton">Multiply them!</button>
+  		</p>
+   		Results: <p id="results">???</p>
+ 
+</section>
+
+</body>
+</html>
