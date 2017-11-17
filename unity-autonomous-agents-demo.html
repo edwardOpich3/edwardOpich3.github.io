@@ -28,7 +28,15 @@
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
+  <script type="text/javascript">
+			window.onload = $(document).ready(
+			function(e)
+			{
+				$(".header").load('navigation.html');
+			});
+  </script>
 
   <!-- Favicon
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -42,80 +50,7 @@
   <div class="container">
   
 	<!-- Header of each page -->
-  
-    <div id="header" class="row" style="margin-top: 2%">
-      <div class="twelve columns">
-		<img src="images/logo.png" style="float: left" alt="Pixel art of myself" />
-        <h1>Edward Opich's Portfolio</h1>
-      </div>
-    </div>
-	<div id="navigation" class="row">
-		<div class="two columns">
-			<a href="index.html">Home</a>
-		</div>
-		<div class="two columns">
-			<a href="#" onclick="popupMenu(0)">Games</a>
-		</div>
-		<div class="two columns">
-			<a href="#" onclick="popupMenu(1)">Tools</a>
-		</div>
-		<div class="two columns">
-			<a href="music.html">Music</a>
-		</div>
-		<div class="two columns">
-			<a href="#" onclick="popupMenu(3)">Other Media</a>
-		</div>
-		<div class="two columns">
-			<a href="resume.pdf">Resume</a>
-		</div>
-	</div>
-	<div id="popups" class="row">
-		<div class="four columns offset-by-two columns" style="border: 1px solid black; position: absolute; background-color: #1F1F1F; display:none">
-			<div class="row">
-				<a href="a-ninjas-training.html">A Ninja's Training</a>
-			</div>
-			<div class="row">
-				<a href="mazes-and-monsters.html">Mazes &amp; Monsters</a>
-			</div>
-			<div class="row">
-				<a href="apocalyptic-pizza-dash.html">Apocalyptic Pizza Dash</a>
-			</div>
-			<div class="row">
-				<a href="tetris.html">SVG Tetris Clone</a>
-			</div>
-		</div>
-		<div class="four columns offset-by-four columns" style="border: 1px solid black; position: absolute; background-color: #1F1F1F; display:none">
-			<div class="row">
-				<a href="mazes-and-monsters-level-editor.html">Mazes &amp; Monsters Level Editor</a>
-			</div>
-			<div class="row">
-				<a href="apocalyptic-pizza-dash-level-editor.html">Apocalyptic Pizza Dash Level Editor</a>
-			</div>
-			<div class="row">
-				<a href="disassembler.html">68k Disassembler</a>
-			</div>
-		</div>
-		<div class="four columns offset-by-six columns" style="border: 1px solid black; position: absolute; background-color: #1F1F1F; display:none">
-			
-		</div>
-		<div class="four columns offset-by-eight columns" style="border: 1px solid black; position: absolute; background-color: #1F1F1F; display:none">
-			<div class="row">
-				<a href="stone-age-skirmish.html">Stone-Age Skirmish (artwork)</a>
-			</div>
-			<div class="row">
-				<a href="stone-age-skirmish-music.html">Stone-Age Skirmish (sound)</a>
-			</div>
-			<div class="row">
-				<a href="pogohammer.html">Pogohammer</a>
-			</div>
-			<div class="row">
-				<a href="unity-autonomous-agents-demo.html">Unity Autonomous Agents Demo</a>
-			</div>
-			<div class="row">
-				<a href="mode-7-shader.html">Mode 7 Shader</a>
-			</div>
-		</div>
-	</div>
+	<div class="header"></div>
 	
 	<!-- Original content from here -->
 	

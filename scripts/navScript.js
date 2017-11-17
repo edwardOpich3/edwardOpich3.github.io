@@ -2,13 +2,13 @@
 
 var menus;
 
-function init()
-{
-	menus = document.getElementById("popups").children;
-}
-
 function popupMenu(clickedButton)
 {
+	if(menus == null)
+	{
+		menus = document.getElementById("popups").children;
+	}
+
 	if(menus[clickedButton].style.display == "initial")
 	{
 		menus[clickedButton].style.display = "none";
@@ -22,5 +22,3 @@ function popupMenu(clickedButton)
 	
 	menus[clickedButton].style.display = "initial";
 }
-
-window.onload = init;
