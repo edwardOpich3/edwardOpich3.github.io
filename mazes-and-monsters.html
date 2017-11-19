@@ -22,20 +22,16 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/styles.css">
-  <style>
-	@import url('https://fonts.googleapis.com/css?family=VT323');
-  </style> 
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
   <script type="text/javascript">
-			window.onload = $(document).ready(
-			function(e)
-			{
-				$(".header").load('navigation.html');
-			});
+	window.onload = function(e)
+	{
+		$(".header").load('navigation.html');
+	};
   </script>
 
   <!-- Favicon
@@ -57,12 +53,13 @@
 	<div class="row content" style="margin-top: 2%">
 		<div class="row">
 			<div class="twelve columns">
-				<h2>Mazes &amp; Monsters</h2>
-				<p>Mazes and Monsters was my second big attempt at designing and developing a game, back when I was 17, in 2014.
-				I created the game in my free time, and solo; all assets and programming were done by me. I imposed some guidelines and goals for myself;
-				I restricted myself to the color palette, resolution, sprite size, and sounds prouducable by the Sega Master System, and it wasn't just going to be
-				a blatant Pac-Man clone; there needed to be some originality to it. That came in the form of somewhat original AI, breakable walls, a new theme, 
-				and needing to actually climb the stairs to complete the stage.</p>
+				<h4>Mazes &amp; Monsters</h4>
+				<p>You've stumbled upon an ancient, towering structure filled to the brim with ultra-rare playing cards for one of your favorite games!
+				But the tower is <em>also</em> crawling with monsters from the game who would love a good snack! Dare to grab as many cards as you can while fending
+				off the monsters and keeping yourself in one piece!</p>
+				<p>Mazes and Monsters was my second big attempt at designing and developing a game, back in 2014.
+				I created the game in my free time, and solo; all assets and programming were done by me. The game is a Pac-man clone,
+				with a bit of creative liberty taken, as well as sporting a Sega Master System inspired aesthetic in its artwork, music, and SFX.</p>
 				<p>The game is mostly finished, however I ended up moving on to bigger and better things before I implemented difficulty increases and other features.</p>
 				<p>The game was programmed using the Allegro graphics library with C++. Artwork was made in GIMP. The music and SFX was made using the Deflemask tracker.</p>
 				<img src="images/mam.png" alt="In-game screenshot: Walking around the maze" width="100%" height="100%" />
@@ -78,7 +75,7 @@
 	<!-- Footer of each page -->
 	<div class="row footer">
 		<div class="twelve columns">
-			<p>&copy; Edward Opich 2016</p>
+			<p>&copy; Edward Opich 2017</p>
 		</div>
 	</div>
 	

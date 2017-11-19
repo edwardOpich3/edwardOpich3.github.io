@@ -22,20 +22,16 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/styles.css">
-  <style>
-	@import url('https://fonts.googleapis.com/css?family=VT323');
-  </style> 
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
   <script type="text/javascript">
-			window.onload = $(document).ready(
-			function(e)
-			{
-				$(".header").load('navigation.html');
-			});
+	window.onload = function(e)
+	{
+		$(".header").load('navigation.html');
+	};
   </script>
 
   <!-- Favicon
@@ -57,8 +53,8 @@
 	<div class="row content" style="margin-top: 2%">
 		<div class="row">
 			<div class="twelve columns">
-				<h2>Music</h2>
-				<p>Here's some samples of various music tracks I've created!</p>
+				<h4>Music</h4>
+				<p>Here are some samples of various music tracks I've created.</p>
 				
 				<p>Stone Age Skirmish BGM:</p>
 				<audio controls><source src="audio/music.mp3" type="audio/mp3"></audio>
@@ -76,19 +72,17 @@
 				<audio controls><source src="audio/ant.mp3" type="audio/mp3"></audio>
 				<p>(Original made in Synthfont, recreation made in LMMS, using the Arachno soundfont)</p>
 				
-				<p>A sad tune, possibly a character's theme?</p>
+				<p>Save Mary BGM:</p>
+				<audio controls><source src="audio/savemary.mp3" type="audio/mp3"></audio>
+				<p>(Made in LMMS, using the Arachno soundfont and the NES soundfont)</p>
+				
+				<p>A sad theme</p>
 				<audio controls><source src="audio/sad.mp3" type="audio/mp3"></audio>
 				<p>(made in LMMS, using the Arachno soundfont)</p>
 				
-				<p>That same tune, but more active:</p>
+				<p>A sad theme, but more upbeat</p>
 				<audio controls><source src="audio/sada.mp3" type="audio/mp3"></audio>
 				<p>(made in LMMS, using the Arachno soundfont)</p>
-				
-				<p>Some improvisation:</p>
-				<audio controls><source src="audio/improv1.mp3" type="audio/mp3"></audio>
-				<audio controls><source src="audio/improv2.mp3" type="audio/mp3"></audio>
-				<audio controls><source src="audio/improv3.mp3" type="audio/mp3"></audio>
-				<p>(all tracks made in LMMS, using the Arachno soundfont)</p>
 			</div>
 		</div>
 	</div>
@@ -96,7 +90,7 @@
 	<!-- Footer of each page -->
 	<div class="row footer">
 		<div class="twelve columns">
-			<p>&copy; Edward Opich 2016</p>
+			<p>&copy; Edward Opich 2017</p>
 		</div>
 	</div>
 	

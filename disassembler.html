@@ -22,20 +22,16 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/styles.css">
-  <style>
-	@import url('https://fonts.googleapis.com/css?family=VT323');
-  </style> 
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
   <script type="text/javascript">
-			window.onload = $(document).ready(
-			function(e)
-			{
-				$(".header").load('navigation.html');
-			});
+	window.onload = function(e)
+	{
+		$(".header").load('navigation.html');
+	};
   </script>
 
   <!-- Favicon
@@ -57,14 +53,10 @@
 	<div class="row content" style="margin-top: 2%">
 		<div class="row">
 			<div class="twelve columns">
-				<h2>Motorola 68000 Disassembler</h2>
-				<p>One dream of mine as a kid was to make a game for the Sega Genesis, as it was my favorite console at the time.
-				Upon discovering that the Genesis used the Motorola 68000 processor (henceforth 'the 68k'), I decided to start learning its assembly language.
-				It was a good motivator for picking up assembly language, and helped me learn quite a lot about the workings of a processor.</p>
-				
-				<p>At one point, I decided that one really good way to both test my knowledge of the language and to learn more about it (as well as the Genesis) would be to try disassembling a game
-				to study it. However, I had trouble finding any disassemblers that were free to use (I'm a college student on a tight budget). So, I did what anyone
-				in my situation would've, and made my own!</p>
+				<h4>Motorola 68000 Disassembler</h4>
+				<p>A program that converts raw binary data into readable Motorola 68000 assembly code. I'm getting into Sega Genesis homebrew
+				development in my free time, and thus had a need to learn how to program for its processor, the M68k. So, I wrote this disassembler
+				with the hopes of solidifying my knowledge of its assembly language in the process.</p>
 				
 				<p>Its current functionality consists of blindly parsing a file's data into 68k instructions to be output to another file.
 				One can input a decimal starting and ending address if they don't want to parse the whole file in one go. I intend on adding more features as I go.</p>
@@ -86,7 +78,7 @@
 	<!-- Footer of each page -->
 	<div class="row footer">
 		<div class="twelve columns">
-			<p>&copy; Edward Opich 2016</p>
+			<p>&copy; Edward Opich 2017</p>
 		</div>
 	</div>
 	

@@ -22,20 +22,16 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/styles.css">
-  <style>
-	@import url('https://fonts.googleapis.com/css?family=VT323');
-  </style> 
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
   <script type="text/javascript">
-			window.onload = $(document).ready(
-			function(e)
-			{
-				$(".header").load('navigation.html');
-			});
+	window.onload = function(e)
+	{
+		$(".header").load('navigation.html');
+	};
   </script>
 
   <!-- Favicon
@@ -57,11 +53,12 @@
 	<div class="row content" style="margin-top: 2%">
 		<div class="row">
 			<div class="twelve columns">
-				<h2>Mode 7 Shader</h2>
-				<p>The Super Nintendo Entertainment System had a huge variety of games that used one of its effects known as "Mode 7", which in short allowed the console to apply any number of 2D affine transformations to
-				a background. These transformations could be updated on a per-scanline basis, meaning that some really cool distortion and perspective effects could be done. This program was written to test out a shader
-				I wrote to try and simulate the specific perspective effect used in Super Mario Kart, and thus uses some of its graphics to show its accuracy.</p>
-				<p>The program was written in C++ using the Allegro 5 library, and using HLSL for the shader. It was written over the course of about a month. I then ported it to GLSL over the course of a day.</p>
+				<h4>Mode 7 Shader</h4>
+				<p>This program was written to test out a shader I wrote to try and simulate the specific pseudo-perspective
+				effect used in the Super Nintendo Entertainment System game, Super Mario Kart, and thus uses some of its graphics to show its accuracy.</p>
+				
+				<p>The program was written in C++ using the Allegro 5 library, and using HLSL for the shader.
+				It was written over the course of about a month. I then ported it to GLSL over the course of a day.</p>
 				<img src="images/mode7.png" alt="Mario Circuit 1 as seen through my test program" width="100%" height="100%" />
 			</div>
 		</div>
@@ -76,7 +73,7 @@
 	<!-- Footer of each page -->
 	<div class="row footer">
 		<div class="twelve columns">
-			<p>&copy; Edward Opich 2016</p>
+			<p>&copy; Edward Opich 2017</p>
 		</div>
 	</div>
 	

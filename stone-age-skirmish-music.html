@@ -22,20 +22,16 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/styles.css">
-  <style>
-	@import url('https://fonts.googleapis.com/css?family=VT323');
-  </style> 
   
   <!-- JavaScript
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <script src="scripts/jquery-3.2.1.min.js"></script>
   <script src="scripts/navScript.js"></script>
   <script type="text/javascript">
-			window.onload = $(document).ready(
-			function(e)
-			{
-				$(".header").load('navigation.html');
-			});
+	window.onload = function(e)
+	{
+		$(".header").load('navigation.html');
+	};
   </script>
 
   <!-- Favicon
@@ -57,21 +53,22 @@
 	<div class="row content" style="margin-top: 2%">
 		<div class="row">
 			<div class="twelve columns">
-				<h2>Stone Age Skirmish Sound</h2>
-				<p>Stone Age Skirmish was a project for a class, in which we had to create assets and a theme
-				for a pre-made shmup game. SFX were required to include, with music being optional.</p>
-				<p>Here's the list of SFX and the one song from the game!</p>
+				<h4>Stone Age Skirmish Sound</h4>
+				<p>Alongside the graphical assets for Stone Age Skirmish, SFX were also required.
+				BGM was optional, but I opted to include it anyway.</p>
 				
-				<p>Player shooting SFX:</p>
+				<p>Here is the list of SFX and the one song from the game.</p>
+				
+				<p>Player shooting SFX</p>
 				<audio controls><source src="audio/player.mp3" type="audio/mp3"></audio>
 				
-				<p>Enemy shooting SFX:</p>
+				<p>Enemy shooting SFX</p>
 				<audio controls><source src="audio/enemy.mp3" type="audio/mp3"></audio>
 				
-				<p>Hit player/enemy SFX:</p>
+				<p>Hit player/enemy SFX</p>
 				<audio controls><source src="audio/boom.mp3" type="audio/mp3"></audio>
 				
-				<p>BGM:</p>
+				<p>BGM</p>
 				<audio controls><source src="audio/music.mp3" type="audio/mp3"></audio>
 				
 				<p>The music was made in Synthfont, using the Arachno soundfont.</p>
@@ -88,7 +85,7 @@
 	<!-- Footer of each page -->
 	<div class="row footer">
 		<div class="twelve columns">
-			<p>&copy; Edward Opich 2016</p>
+			<p>&copy; Edward Opich 2017</p>
 		</div>
 	</div>
 	

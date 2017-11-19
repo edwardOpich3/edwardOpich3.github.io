@@ -27,7 +27,7 @@ a:hover
 	background-color: white;
 	border: 1px solid black;
 	padding: 0.5%;
-	font-family: 'VT323', monospace;
+	font-family: 'Press Start 2P', monospace;
 }
 
 #header div
@@ -73,8 +73,9 @@ a:hover
 	padding: 2%;
 }
 
-.content h2
+.content h4
 {
+	font-family: 'Press Start 2P', monospace;
 	text-align: center;
 }
 
