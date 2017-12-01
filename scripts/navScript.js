@@ -9,7 +9,7 @@ function popupMenu(clickedButton)
 		menus = document.getElementById("popups").children;
 	}
 
-	if(menus[clickedButton].style.display == "initial")
+	if(menus[clickedButton].style.display == "inline-block")
 	{
 		menus[clickedButton].style.display = "none";
 		return;
@@ -20,5 +20,5 @@ function popupMenu(clickedButton)
 		menus[i].style.display = "none";
 	}
 	
-	menus[clickedButton].style.display = "initial";
+	menus[clickedButton].style.display = "inline-block";
 }
