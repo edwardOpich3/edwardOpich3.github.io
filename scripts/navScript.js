@@ -22,3 +22,21 @@ function popupMenu(clickedButton)
 	
 	menus[clickedButton].style.display = "inline-block";
 }
+
+window.onload = function(){
+	var xhr = new XMLHttpRequest();
+
+	xhr.open("GET", "navigation.html");
+
+	xhr.onload = function(){
+		var header = document.querySelector(".header");
+
+		header.innerHTML = xhr.responseXML.querySelector("body").innerHTML;
+
+		menus = header.querySelector("#popups").children;
+	};
+
+	xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
+
+	xhr.send();
+};

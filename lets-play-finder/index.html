@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Project 3</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css?family=Do+Hyeon');
+
+            body
+            {
+                text-align: center;
+            }
+
+            h1
+            {
+                font-size: 64pt;
+            }
+
+            h1, h2
+            {
+                font-family: "Do Hyeon", sans-serif;
+            }
+
+            #loading
+            {
+                animation: loadSpin 1s linear infinite;
+            }
+
+            /* Spinning animation for loading spinner */
+            @keyframes loadSpin
+            {
+                100% { transform: rotate(-360deg); }
+            }
+        </style>
+
+        <!-- Import jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+        <script>
+            "use strict";
+
+            // url and api key for GiantBomb
+            var GB_URL = "https://www.giantbomb.com/api/search/?json_callback=gbSearch&format=jsonp&api_key=";
+            var GB_KEY = "f57d683377deb02159063a9618aaef708731316e";
+
+            // url and api key for Youtube
+            var YT_URL = "https://www.googleapis.com/youtube/v3/search/?callback=ytSearch&part=snippet&type=video&key=";
+            var YT_KEY = "AIzaSyDrxICMCNru0ijt36QbU0fHkQ7AuVzfwOY";
+
+            // Current search values
+            var gbValue;
+            var ytValue;
+
+            // Loading spinner
+            var loadingImg;
+
+            // The HTML content divs
+            var gbContent;
+            var ytContent;
+            
+            // Current page ids
+            var gbPage;
+            var ytPage;
+
+            // Previous and Next page links, and number of current page for Youtube
+            var ytNextPage;
+            var ytPrevPage;
+            var ytPageNum;
+
+            window.onload = init;
+            
+            function init(){
+                document.querySelector("#search").onclick = getData.bind(this);
+
+                document.querySelector("#searchterm").onkeyup = function(e){
+                    if(e.keyCode == 13){
+                        getData.call(this);
+                    }
+                }
+
+                loadingImg = document.querySelector("#loading");
+
+                gbContent = document.querySelector("#gbContent");
+                ytContent = document.querySelector("#ytContent");
+            }
+            
+            // MY FUNCTIONS
+            function getData(){
+                // If gbValue is equal to the search term, we already have the search loaded; don't bother!
+                // Unless we're navigating pages, or aren't on the first page
+                if(decodeURI(gbValue) == document.querySelector("#searchterm").value
+                    && this.value != "Next Page" && this.value != "Previous Page"
+                    && gbPage == 1){
+                    ytContent.style.display = "none";
+                    gbContent.style.display = "block";
+                    return;
+                }
+
+                // Display the loading animation
+                loadingImg.style.display = "inline";
+                gbContent.style.display = "none";
+                ytContent.style.display = "none";
+
+                // New search: our page should be 1!
+                if(this.value != "Next Page" && this.value != "Previous Page"){
+                    gbPage = 1;
+                }
+
+                // build up our URL string
+                var url = GB_URL;
+                url += GB_KEY;
+
+                if(this.value != "Next Page" && this.value != "Previous Page"){
+                    gbValue = document.querySelector("#searchterm").value;
+                }
+                else{
+                    document.querySelector("#searchterm").value = decodeURI(gbValue);
+                    gbValue = decodeURI(gbValue);
+                }
+                
+                // get rid of any leading and trailing spaces
+                gbValue = gbValue.trim();
+                
+                // If there's no info to search then don't bother!
+                if(gbValue.length < 1){
+                    loadingImg.style.display = "none";
+                    return;
+                }
+                
+                // replace spaces the user typed in the middle of the term with %20
+                gbValue = encodeURI(gbValue); 
+                
+                // Add the user's parsed query
+                url += "&query=" + gbValue;
+
+                // Ensure all of our results are games
+                url += "&resources=game";
+
+                // Add our page id
+                url += "&page=" + gbPage;
+                
+                //console.log("loading " + url);
+
+                // Call the web service, and download the file
+                // Thanks, JQuery! http://jquery.com/
+                $.ajax({
+                dataType: "jsonp",
+                url: url,
+                data: null,
+                success: gbSearch,
+                error: errorHandler
+                });
+            }
+            
+            // TODO: Follow D.R.Y!
+            function getData2(){
+                // If ytValue == this.name, this search is the last one we did; don't waste time!
+                if(decodeURI(ytValue) == this.name && this.value != "Next Page" && this.value != "Previous Page"){
+                    ytContent.style.display = "block";
+                    gbContent.style.display = "none";
+                    return;
+                }
+
+                loadingImg.style.display = "inline";
+                gbContent.style.display = "none";
+                ytContent.style.display = "none";
+
+                if(this.value != "Next Page" && this.value != "Previous Page"){
+                    ytPage = "";
+                    ytPageNum = 1;
+                }
+
+                // build up our URL string
+                var url = YT_URL;
+                url += YT_KEY;
+
+                if(this.value != "Next Page" && this.value != "Previous Page"){
+                    ytValue = this.name;
+                }
+                
+                // get rid of any leading and trailing spaces
+                ytValue = ytValue.trim();
+                
+                // In the unlikely case there isn't a video to search, bail out!
+                if(ytValue.length < 1){
+                    loadingImg.style.display = "none";
+                    ytContent.style.display = "block";
+                    ytContent.innerHTML = "<p><i>Error: Youtube query is empty</i></p>";
+
+                    var aElem = document.createElement("a");
+                    aElem.innerHTML = "Back to Game Search Results";
+                    aElem.setAttribute("href", "#");
+                    aElem.onclick = function(){
+                        document.querySelector("#searchterm").value = decodeURI(gbValue);
+                        document.querySelector("#gbContent").style.display = "block";
+                        ytContent.style.display = "none";
+                    };
+
+                    return;
+                }
+                
+                // Begin parsing the query
+                url += "&q=";
+
+                // Due to the way youtube likes to handle spaces, we need to split by space!
+                var splitValue = ytValue.split(" ");
+                for(var i = 0; i < splitValue.length; i++){
+                    // Handle the case of an ampersand, since those don't get parsed correctly
+                    if(splitValue[i] == "&"){
+                        url += "%26+";
+                        continue;
+                    }
+
+                    // Replace any spaces with a '+'!
+                    url += encodeURI(splitValue[i]) + "+";
+                }
+
+                url += "Let's+Play";
+
+                // Add the current page token
+                url += "&pageToken=" + ytPage;
+                
+                //console.log("loading " + url);
+
+                // call the web service, and download the file
+                // Thanks, JQuery! http://jquery.com/
+                $.ajax({
+                dataType: "jsonp",
+                url: url,
+                data: null,
+                success: ytSearch,
+                error: errorHandler
+                });
+            }
+
+            function gbSearch(obj){
+               // console.dir(obj);
+               // console.log("obj = " + obj);
+               // console.log("obj stringified = " + JSON.stringify(obj));
+
+                gbContent.innerHTML = "";
+                
+                // If there's an error, print a message and return
+                if(obj.status_code != 1){
+                    var status = obj.status_code;
+                    var error = obj.error;
+                    gbContent.innerHTML = "<h3><b>Error!</b></h3>" + "<p><i>" + status + "</i><p>" + "<p><i>" + error + "</i><p>";
+                    return; // Bail out
+                }
+                
+                // If there are no results, print a message and return
+                if(obj.results.length == 0){
+                    var status = "No results found";
+                    //console.dir(obj);
+                    gbContent.innerHTML = "<p><i>" + status + "</i><p>" + "<p><i>";
+                    loadingImg.style.display = "none";
+                    gbContent.style.display = "block";
+                    return; // Bail out
+                }
+                
+                // If there is an array of results, loop through them
+                var allGames = obj.results;
+                //console.log("allGames.length = " + allGames.length);
+
+                var pElem = document.createElement("p");
+                var bElem = document.createElement("b");
+
+                bElem.innerHTML = (((gbPage - 1) * obj.limit) + 1) + " - "
+                                    + (obj.number_of_page_results + ((gbPage - 1) * obj.limit))
+                                    + " out of " + obj.number_of_total_results
+                                    + " results for '" + decodeURI(gbValue) + "'";
+
+                pElem.appendChild(bElem);
+                gbContent.appendChild(pElem);
+
+                gbContent.appendChild(document.createElement("hr"));
+                
+                // loop through games here
+                for(var i = 0; i < allGames.length; i++){
+                    // Don't bother if it's not a game, though it always should be
+                    if(allGames[i].resource_type != "game"){
+                        continue;
+                    }
+
+                    pElem = document.createElement("p");
+                    bElem = document.createElement("b");
+
+                    // Display the game's name!
+                    if(allGames[i].name != null){
+                        bElem.innerHTML = allGames[i].name;
+                    }
+                    else{
+                        bElem.innerHTML = "(Error: Name not found)";
+                    }
+
+                    pElem.appendChild(bElem);
+                    gbContent.appendChild(pElem);
+
+                    // If the game has an image, display it!
+                    if(allGames[i].image != null){
+                        var imgElem = document.createElement("img");
+                        imgElem.setAttribute("src", allGames[i].image.thumb_url);
+                        gbContent.appendChild(imgElem);
+                    }
+
+                    // If the game has a short description, display it!
+                    if(allGames[i].deck != null){
+                        pElem = document.createElement("p");
+                        pElem.innerHTML += allGames[i].deck;
+                        gbContent.appendChild(pElem);
+                    }
+
+                    pElem = document.createElement("p");
+                    bElem = document.createElement("b");
+
+                    // If the game has been released and has a date, display it!
+                    if(allGames[i].original_release_date != null){
+                        bElem.innerHTML += "Released on " + parseDate(allGames[i].original_release_date);
+                    }
+
+                    pElem.appendChild(bElem);
+                    gbContent.appendChild(pElem);
+
+                    // Link to the GiantBomb page, if it's available!
+                    if(allGames[i].site_detail_url != null){
+                        var aElem = document.createElement("a");
+                        aElem.setAttribute("href", allGames[i].site_detail_url);
+                        aElem.innerHTML = "Link to game's GiantBomb page";
+                        gbContent.appendChild(aElem);
+                    }
+
+                    // Make the 'Find a let's play' button!
+                    var myButton = document.createElement("input");
+                    myButton.type = "button";
+                    myButton.value = "Find a Let's Play!";
+
+                    pElem = document.createElement("p");
+                    pElem.appendChild(myButton);
+
+                    gbContent.appendChild(pElem);
+
+                    myButton.onclick = getData2.bind(allGames[i]);
+
+                    gbContent.appendChild(document.createElement("hr"));
+                }
+
+                // Define buttons to traverse pages!
+                pElem = document.createElement("p");
+                var myPrevButton;
+                var myNextButton;
+
+                if(gbPage > 1){
+                    myPrevButton = document.createElement("input");
+                    myPrevButton.type = "button";
+                    myPrevButton.value = "Previous Page";
+
+                    pElem.appendChild(myPrevButton);
+                }
+
+                if(gbPage * obj.limit < obj.number_of_total_results){
+                    myNextButton = document.createElement("input");
+                    myNextButton.type = "button";
+                    myNextButton.value = "Next Page";
+
+                    pElem.appendChild(myNextButton);
+                }
+
+                if(pElem.childElementCount > 0){
+                    gbContent.appendChild(pElem);
+
+                    if(myPrevButton != undefined){
+                        myPrevButton.onclick = function(e){
+                            gbPage--;
+                            getData.call(this);
+                        };
+                    }
+
+                    if(myNextButton != undefined){
+                        myNextButton.onclick = function(e){
+                            gbPage++;
+                            getData.call(this);
+                        };
+                    }
+                }
+
+                loadingImg.style.display = "none";
+                gbContent.style.display = "block";
+            }
+
+            function ytSearch(obj){
+                ytContent.innerHTML = "";
+
+                // If there's an error, print a message and return
+                if(obj.error != undefined){
+                    var status = obj.code;
+                    var error = obj.message;
+                    document.querySelector("#content").innerHTML = "<h3><b>Error!</b></h3>" + "<p><i>" + status + "</i><p>" + "<p><i>" + error + "</i><p>";
+                    return; // Bail out
+                }
+                
+                // if there are no results, print a message and return
+                if(obj.items.length == 0){
+                    var status = "No results found";
+                    ytContent.innerHTML = "<p><i>" + status + "</i><p>" + "<p><i>";
+                    loadingImg.style.display = "none";
+                    ytContent.style.display = "block";
+                    return; // Bail out
+                }
+
+                ytNextPage = obj.nextPageToken;
+                ytPrevPage = obj.prevPageToken;
+
+                // This is where the fun begins
+                var allVideos = obj.items;
+
+                var pElem = document.createElement("p");
+                var bElem = document.createElement("b");
+
+                bElem.innerHTML = (((ytPageNum - 1) * obj.pageInfo.resultsPerPage) + 1) + " - "
+                                    + (((ytPageNum - 1) * obj.pageInfo.resultsPerPage) + obj.pageInfo.resultsPerPage) + " out of "
+                                    + obj.pageInfo.totalResults + " results for '"
+                                    + decodeURI(ytValue) + "'";
+
+                pElem.appendChild(bElem);
+                ytContent.appendChild(pElem);
+                
+                var aElem = document.createElement("a");
+                aElem.innerHTML = "Back to Game Search Results";
+                aElem.setAttribute("href", "#");
+                aElem.onclick = function(){
+                    document.querySelector("#searchterm").value = decodeURI(gbValue);
+                    document.querySelector("#gbContent").style.display = "block";
+                    ytContent.style.display = "none";
+                }
+
+                ytContent.appendChild(aElem);
+
+                ytContent.appendChild(document.createElement("hr"));
+
+                for(var i = 0; i < allVideos.length; i++){
+                    pElem = document.createElement("p");
+                    bElem = document.createElement("b");
+
+                    if(allVideos[i].snippet.title != null){
+                        bElem.innerHTML = allVideos[i].snippet.title;
+                    }
+                    else{
+                        bElem.innerHTML = "Error: Title not found";
+                    }
+
+                    pElem.appendChild(bElem);
+                    ytContent.appendChild(pElem);
+
+                    if(allVideos[i].snippet.thumbnails.high != null && allVideos[i].id.videoId != null){
+                        aElem = document.createElement("a");
+
+                        var imgElem = document.createElement("img");
+                        imgElem.setAttribute("src", allVideos[i].snippet.thumbnails.high.url);
+
+                        aElem.appendChild(imgElem);
+                        aElem.setAttribute("href", "https://www.youtube.com/watch?v=" + allVideos[i].id.videoId);
+
+                        ytContent.appendChild(aElem);
+                    }
+
+                    if(allVideos[i].snippet.channelTitle != null && allVideos[i].snippet.channelId != null){
+                        pElem = document.createElement("p");
+                        aElem = document.createElement("a");
+                        aElem.innerHTML = allVideos[i].snippet.channelTitle;
+                        aElem.setAttribute("href", "https://www.youtube.com/channel/" + allVideos[i].snippet.channelId);
+
+                        pElem.appendChild(aElem);
+                        ytContent.appendChild(pElem);
+                    }
+
+                    ytContent.appendChild(document.createElement("hr"));
+                }
+
+                pElem = document.createElement("p");
+                var myPrevButton;
+                var myNextButton;
+
+                if(ytPrevPage != undefined){
+                    myPrevButton = document.createElement("input");
+                    myPrevButton.type = "button";
+                    myPrevButton.value = "Previous Page";
+
+                    pElem.appendChild(myPrevButton);
+                }
+
+                if(ytNextPage != undefined){
+                    myNextButton = document.createElement("input");
+                    myNextButton.type = "button";
+                    myNextButton.value = "Next Page";
+
+                    pElem.appendChild(myNextButton);
+                }
+
+                if(pElem.childElementCount > 0){
+                    ytContent.appendChild(pElem);
+
+                    if(myPrevButton != undefined){
+                        myPrevButton.onclick = function(e){
+                            ytPage = ytPrevPage;
+                            ytPageNum--;
+                            getData2.call(this);
+                        };
+                    }
+
+                    if(myNextButton != undefined){
+                        myNextButton.onclick = function(e){
+                            ytPage = ytNextPage;
+                            ytPageNum++;
+                            getData2.call(this);
+                        };
+                    }
+                }
+
+                loadingImg.style.display = "none";
+                ytContent.style.display = "block";
+            }
+
+            // Handles errors in the ajax calls
+            function errorHandler(obj){
+                if(obj.status == 200){
+                    return;
+                }
+
+                loadingImg.style.display = "none";
+                gbContent.style.display = "block";
+
+                gbContent.innerHTML = "<p><i>Error " + obj.status + ": " + obj.statusText + "</i></p>";
+            }
+
+            // Pass in a string, and this will blindly parse out a date!
+            function parseDate(date){
+                // FORMAT: Year-Month-Day HH:MM:SS (24h)
+
+                // Splits date into the date and time
+                var myValues = date.split(" ");
+                
+                // Splits date into year, month, and day
+                myValues[0] = myValues[0].split("-");
+
+                // Splits time into hour, minute, and second
+                myValues[1] = myValues[1].split(":");
+
+                // Begin parsing!
+                var myString = "";
+
+                // First, the date
+                // Figure out the month!
+                switch(Number(myValues[0][1])){
+                    case 1:
+                        myString += "January ";
+                        break;
+                    
+                    case 2:
+                        myString += "February ";
+                        break;
+
+                    case 3:
+                        myString += "March ";
+                        break;
+
+                    case 4:
+                        myString += "April ";
+                        break;
+
+                    case 5:
+                        myString += "May ";
+                        break;
+
+                    case 6:
+                        myString += "June ";
+                        break;
+
+                    case 7:
+                        myString += "July ";
+                        break;
+
+                    case 8:
+                        myString += "August ";
+                        break;
+
+                    case 9:
+                        myString += "September ";
+                        break;
+
+                    case 10:
+                        myString += "October ";
+                        break;
+
+                    case 11:
+                        myString += "November ";
+                        break;
+
+                    case 12:
+                        myString += "December ";
+                        break;
+                }
+
+                // Figure out which postfix to put on the day!
+                myString += Number(myValues[0][2]);
+                if(myValues[0][2] == "01" || myValues[0][2] == "21" || myValues[0][2] == "31"){
+                    myString += "st, ";
+                }
+                else if(myValues[0][2] == "02" || myValues[0][2] == "22"){
+                    myString += "nd, ";
+                }
+                else if(myValues[0][2] == "03" || myValues[0][2] == "23"){
+                    myString += "rd, ";
+                }
+                else{
+                    myString += "th, ";
+                }
+
+                // Then, add the year.
+                myString += myValues[0][0];
+
+                return myString;
+            }
+
+        </script>
+    </head>
+
+    <body>
+        <h1>Let's Play Finder</h1>
+
+        <h2>What game do you want to watch?</h2>
+        <input type="text" id="searchterm" placeholder="Search for a game" />
+        <input type="button" id="search" value="Search!" />
+
+        <br>
+
+        <img id="loading" src="media/loading.png" style="display: none" />
+        <div id="gbContent"></div>
+        <div id="ytContent"></div>
+    </body>
+
+</html>

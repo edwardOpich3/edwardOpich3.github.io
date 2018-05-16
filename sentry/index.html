@@ -1,0 +1,59 @@
+<!--
+    index.html
+    Written by Edward Opich
+    Last modified 3/30/18
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/main.css">
+    <title>Project 2</title>
+</head>
+
+<body>
+    <!-- As the game progresses, enable each of the instructions sections one by one! -->
+    <div id="instructions" style="display: flex">
+        <section id="movement" style="flex: 1">
+            <h2>Basic Controls</h2>
+            <p>Walk: A / D</p>
+            <p>Jump: W</p>
+            <p id="crouching" style="display: none">Crouch: S</p>
+        </section>
+        <section style="display: flex">
+            <canvas>
+                Your browser cannot load the canvas.
+            </canvas>
+        </section>
+        <section id="shooting" style="flex: 1">
+            <h2>Shooting</h2>
+            <p>Aim: Mouse</p>
+            <p>Shoot: Left Click</p>
+        </section>
+    </div>
+
+    <script src="scripts/loader.js"></script>
+    <script src="scripts/utilities.js"></script>
+
+    <script src="scripts/graphics.js"></script>
+    <script src="scripts/emitter.js"></script>
+
+    <script src="scripts/userInput.js"></script>
+
+    <script src="scripts/sound.js"></script>
+    <script src="scripts/classes.js"></script>
+
+    <script src="scripts/game.js"></script>
+    <script src="scripts/player.js"></script>
+    <script src="scripts/level.js"></script>
+
+    <script src="scripts/main.js"></script>
+
+    <section id="audioControls">
+        <audio id="bgAudio" src="media/BGM.mp3" controls loop></audio>
+    </section>
+</body>
+
+</html>

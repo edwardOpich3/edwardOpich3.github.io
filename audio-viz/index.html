@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Web Audio Visualizer</title>
+	<style>
+	@import url('https://fonts.googleapis.com/css?family=Metal+Mania');
+
+	body
+	{
+        background: #000000;
+    	font-family: tahoma, verdana, "sans serif";
+		color: #FFFFFF;
+		text-align: center;
+    }
+
+	h1,h2
+	{
+		font-family: "Metal Mania", cursive;
+	}
+
+    canvas
+	{
+        margin-top: 10px;
+		margin-left: 10px;
+        background: black;
+    }
+      
+    #controls
+	{
+		margin-left: 10px;
+		margin-top: 10px;
+    }
+
+	#canvas2
+	{
+		border: 2px ridge #FFFFFF;
+		background: #111;
+	}
+
+	</style>
+	<script>
+	// An IIFE ("Iffy") - see the notes in mycourses
+	(function(){
+		"use strict";
+		
+		// Audio Variables
+		var NUM_SAMPLES = 256;
+		var SOUND_1 = 'media/☆ＳＥＩＮＷＡＶＥ☆２０００☆.mp3';
+		var SOUND_2 = 'media/The Doomsday.mp3';
+		var SOUND_3 = 'media/Artificial Intelligence Bomb.mp3';
+		var audioElement = undefined;
+		var analyserNode = undefined;
+		var delayNode = undefined;
+		var lowShelfNode = undefined;
+
+		// Canvases
+		var canvas,ctx = undefined;
+		var canvas2,ctx2 = undefined;
+		var bassFocused = true;	// Are we currently viewing the bass, or the amp?
+
+		// Effects pseudo enums
+		var EFFECT_BOOLS = Object.freeze({
+			TINT_RED: 0,
+			INVERT: 1,
+			NOISE: 2,
+			LINES: 3,
+			DISTORTION: 4,
+			ACCURATE_STRUM: 5,
+			DIVIDE_WAVEFORM: 6,
+			USE_GRADIENT: 7
+		});
+
+		var EFFECT_SLIDERS = Object.freeze({
+			DISTORTION_HORIZONTAL: 0,
+			DISTORTION_VERTICAL: 1,
+			BASS_BOOST: 2,
+			DELAY: 3,
+			MAX_RADIUS: 4
+		});
+
+		var effectBools = [];
+		var effectSliders = [];
+
+		// Bass Amp Visual Effect
+		var ampEffect = 0;
+
+		// Pseudo Enum for Bass Amp Effects
+		var AMP_EFFECTS = Object.freeze({
+			RECTANGLES: 0,
+			CIRCLES: 1,
+			BEZIER: 2
+		});
+
+		// Images
+		var bassImg = undefined;
+		var ampImg = undefined;
+		
+		// Initialize all components to the visualizers
+		function init(){
+			// Set up the canvases and their contexts
+			canvas = document.querySelector('#canvas');
+			ctx = canvas.getContext("2d");
+
+			canvas2 = document.querySelector("#canvas2");
+			ctx2 = canvas2.getContext("2d");
+			
+			// Get reference to <audio> element on page
+			audioElement = document.querySelector('audio');
+			
+			// Set up the node hierarchy and get our analyser node
+			analyserNode = createWebAudioContextWithAnalyserNode(audioElement);
+			
+			// Get all of the UI elements working
+			setupUI();
+			
+			// Load and play default sound into audio element
+			playStream(audioElement,SOUND_1);
+
+			// Get the images
+			bassImg = document.getElementById("bassImg");
+			ampImg = document.getElementById("ampImg");
+			
+			// Start animation loop
+			update();
+		};
+		
+		// Connect all desired audio nodes together in the desired pattern, then return the resulting Analyser Node
+		function createWebAudioContextWithAnalyserNode(audioElement) {
+			var audioCtx, analyserNode, sourceNode;
+			// Create new AudioContext
+			// The || is because WebAudio has not been standardized across browsers yet
+			// http://webaudio.github.io/web-audio-api/#the-audiocontext-interface
+			audioCtx = new (window.AudioContext || window.webkitAudioContext);
+			
+			// Create an analyser node
+			analyserNode = audioCtx.createAnalyser();
+
+			// Create BiQuadFilterNode instance (bass boost)
+			lowShelfNode = audioCtx.createBiquadFilter();
+			lowShelfNode.type = "lowshelf";
+			lowShelfNode.frequency.value = 150;
+
+			// create DelayNode instance
+			delayNode = audioCtx.createDelay();
+			delayNode.delayTime.value = 0.0;
+			
+			/*
+			We will request NUM_SAMPLES number of samples or "bins" spaced equally 
+			across the sound spectrum.
+			
+			If NUM_SAMPLES (fftSize) is 256, then the first bin is 0 Hz, the second is 172 Hz, 
+			the third is 344Hz. Each bin contains a number between 0-255 representing 
+			the amplitude of that frequency.
+			*/ 
+			
+			// fft stands for "Fast Fourier Transform"
+			analyserNode.fftSize = NUM_SAMPLES;
+			
+			// Hook up the source node to the <audio> element
+			sourceNode = audioCtx.createMediaElementSource(audioElement); 
+
+			// This channel will only have the source and the bass boost connected to the destination
+			sourceNode.connect(lowShelfNode);
+			lowShelfNode.connect(audioCtx.destination);
+
+			// This channel will have the source, bass boost, and the delay. It will also be the one visualized.
+			sourceNode.connect(lowShelfNode);
+			lowShelfNode.connect(delayNode);
+			delayNode.connect(analyserNode);
+			analyserNode.connect(audioCtx.destination);
+
+			return analyserNode;
+		}
+		
+		// Set up the UI elements.
+		function setupUI(){
+			var myUI = document.querySelectorAll("input");
+
+			// Hurrah for compact, non-repetitive code!
+			// Get all of the <input> elements, parse them by type, and assign onchange handlers
+			var currentSlider = 0;
+			for(var i = 0; i < myUI.length; i++){
+				if(myUI[i].type == "checkbox"){
+					effectBools.push(false);
+					myUI[i].index = i - currentSlider;
+
+					myUI[i].onchange = function(e){
+						effectBools[e.target.index] = e.target.checked;
+					};
+				}
+
+				else if(myUI[i].type == "range"){
+					effectSliders.push(0.0);
+					myUI[i].index = currentSlider;
+
+					myUI[i].onchange = function(e){
+						effectSliders[e.target.index] = parseFloat(e.target.value);
+					};
+
+					currentSlider++;
+				}
+			}
+			effectSliders[EFFECT_SLIDERS.MAX_RADIUS] = 40;
+
+			// The selected track has been changed
+			document.querySelector("#trackSelect").onchange = function(e){
+				playStream(audioElement,e.target.value);
+			};
+			
+			// The full screen button has been clicked
+			document.querySelector("#fsButton").onclick = function(){
+				requestFullscreen(canvas);
+			};
+
+			// The view toggle button has been clicked
+			document.querySelector("#canvas2").onclick = function(e){
+				bassFocused = !bassFocused;
+
+				// If we're now looking at the bass, make the relevant changes to the UI and HTML.
+				if(bassFocused){
+					document.querySelector("h1").innerHTML = "Bass Guitar Visualizer";
+					document.querySelector("#bassEffectsDiv").style.display = "initial";
+					document.querySelector("#ampEffectsDiv").style.display = "none";
+				}
+
+				// Do the same if we're now looking at the amp.
+				else{
+					document.querySelector("h1").innerHTML = "Bass Amp Visualizer";
+					document.querySelector("#ampEffectsDiv").style.display = "initial";
+					document.querySelector("#bassEffectsDiv").style.display = "none";
+				}
+			};
+
+			// The Bass Amp effect has been changed
+			document.querySelector("#ampEffectSelect").onchange = function(e){
+				// Change the variable depending on the newly selected effect, and make changes to the UI accordingly.
+				switch(e.target.value){
+					case "rectangles":{
+						ampEffect = AMP_EFFECTS.RECTANGLES;
+						document.querySelector("#radiusLabel").style.display = "none";
+						document.querySelector("#gradientLabel").style.display = "initial";
+						break;
+					}
+
+					case "circles":{
+						ampEffect = AMP_EFFECTS.CIRCLES;
+						document.querySelector("#radiusLabel").style.display = "inline";
+						document.querySelector("#gradientLabel").style.display = "none";
+						break;
+					}
+
+					case "bezier":{
+						ampEffect = AMP_EFFECTS.BEZIER;
+						document.querySelector("#radiusLabel").style.display = "none";
+						document.querySelector("#gradientLabel").style.display = "initial";
+						break;
+					}
+				}
+			};
+		};
+		
+		// Play the audio file located at [path] using [audioElement], and update the HTML accordingly.
+		function playStream(audioElement,path){
+			audioElement.src = path;
+			audioElement.play();
+			audioElement.volume = 0.2;
+			document.querySelector('#status').innerHTML = "Now playing: " + path;
+		};
+		
+		// Get the data from the audio nodes and the UI, and update the canvas and audio nodes accordingly.
+		function update() { 
+			// Keep the update loop going!
+			requestAnimationFrame(update);
+			
+			/*
+				Nyquist Theorem
+				http://whatis.techtarget.com/definition/Nyquist-Theorem
+				The array of data we get back is 1/2 the size of the sample rate 
+			*/
+			
+			// Create an array of 8-bit unsigned ints
+			var data = new Uint8Array(NUM_SAMPLES/2); 
+			
+			// Populate the array with the appropriate type of data depending on the current view
+			if(bassFocused){
+				analyserNode.getByteTimeDomainData(data);
+			}
+			else{
+				analyserNode.getByteFrequencyData(data);
+			}
+			
+			// BEGIN DRAWING //
+
+			// Clear both canvases
+			ctx.clearRect(0,0,640,400);
+			ctx2.clearRect(0, 0, 128, 80);
+
+			// Draw the appropriate background images to each canvas based on current view
+			if(bassFocused){
+				ctx.drawImage(bassImg, 0, 94);
+				ctx2.drawImage(ampImg, 26, 0, 75, 80);
+			}
+			else{
+				ctx.drawImage(ampImg, 132, 0);
+				ctx2.drawImage(bassImg, 0, 19, 128, 40);
+			}
+			
+			// Draw the visualizations based on the data from the array
+			for(var i = 0; i < data.length; i++) {
+				// Draw the bass strings (waveform) visualizer
+				if(bassFocused){
+					var nodeSpacing = 3.6;
+					var extraSpace = 2;
+					var topSpacing = 50;
+					var adjustedLength = data.length;
+
+					var accessor = i;
+
+					ctx.strokeStyle = "red";
+					ctx.lineWidth = 2;
+
+					// If we have the waveform divided across the strings, we need only a fourth of the samples per string
+					// That means more space between samples
+					if(effectBools[EFFECT_BOOLS.DIVIDE_WAVEFORM]){
+						nodeSpacing *= 4;
+						extraSpace *= 4;
+						adjustedLength /= 4;
+
+						// If i is >= adjustedLength, then we've already drawn everything we need to.
+						if(i >= adjustedLength){
+							break;
+						}
+					}
+
+					// Draw a cool line
+					for(var j = 0; j < 4; j++){
+						if(effectBools[EFFECT_BOOLS.DIVIDE_WAVEFORM]){
+							// Have to be able to access the data at different places if we're dividing the waveform
+							accessor = i + (j * adjustedLength);
+						}
+
+						// Decrease the thickness of the strings as we go down the bass
+						ctx.lineWidth = 2 - (j / 2);
+
+						var node1Height;
+						var node2Height;
+
+						// Default height
+						node1Height = node2Height = topSpacing + 256;
+
+						// If accurate strum is off, we want the raw amplitude, regardless of location
+						if(!effectBools[EFFECT_BOOLS.ACCURATE_STRUM]){
+							node1Height -= data[accessor];
+							node2Height -= data[accessor + 1];
+						}
+
+						// If accurate strum is on, decrease the amplitude towards the ends of the bass
+						else{
+							node1Height -= (((data[accessor] - 128) * Math.sin((i / adjustedLength) * Math.PI)) + 128);
+							node2Height -= (((data[accessor + 1] - 128) * Math.sin(((i + 1) / adjustedLength) * Math.PI)) + 128);
+						}
+
+						// Spread the strings by 10 pixels at the bridge
+						node1Height += (10 * j);
+						node2Height += (10 * j);
+
+						// Slant the lower strings upwards so that they reach the top neck at the right height
+						node1Height -= (j * ((5 * i) / adjustedLength));
+						node2Height -= (j * ((5 * (i + 1)) / adjustedLength));
+
+						// We're at the bridge
+						if(i == 0){
+							ctx.beginPath();
+							ctx.moveTo(56, 128 + topSpacing + (10 * j));
+							ctx.lineTo(Math.ceil(i * (nodeSpacing)) + 56 + extraSpace, node1Height);
+
+							ctx.stroke();
+							ctx.closePath();
+						}
+
+						ctx.beginPath();
+						ctx.moveTo(Math.ceil(i * (nodeSpacing)) + 56 + extraSpace, node1Height);
+
+						// We're somewhere between the bridge and the top of the neck
+						if(i < adjustedLength - 1){
+							ctx.lineTo(Math.ceil((i + 1) * (nodeSpacing)) + 56 + extraSpace, node2Height);
+						}
+
+						// We're at the top of the neck
+						else{
+							ctx.lineTo(517, 128 + topSpacing + (10 * j) - (j * ((5 * (i + 1)) / adjustedLength)));	
+						}
+
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+
+				// Draw the amp (frequency) visualizer
+				// i < 82 so that we don't draw those annoying high frequencies that rarely move from 0
+				// (also so that we don't draw the rectangles / bezier curves past the edge of the amp screen)
+				else if(i < 82){
+
+					if(ampEffect == AMP_EFFECTS.RECTANGLES){
+						var barSpacing = 1;
+						var barWidth = 2;
+						var barHeight = 32;
+						var topSpacing = 80;
+
+						if(!effectBools[EFFECT_BOOLS.USE_GRADIENT]){
+							ctx.fillStyle = "red";
+						}
+						else{
+							var myGrad = ctx.createLinearGradient(0, topSpacing + 256, 0, 154);
+							myGrad.addColorStop(0, "#0000FF");
+							myGrad.addColorStop(0.5, "#00FF00");
+							myGrad.addColorStop(1, "#FF0000");
+
+							ctx.fillStyle = myGrad;
+						}
+
+						// Draw the rectangles based on our specified parameters
+						// We scale it down vertically a bit so we don't go off the top of the amp screen
+						ctx.fillRect((i * (barWidth + barSpacing)) + 197, topSpacing + 256 - (data[i] * 0.7), barWidth, barHeight);
+					}
+
+					else if(ampEffect == AMP_EFFECTS.CIRCLES){
+						// Reddish circles
+						var percent = data[i] / 255;
+						var circleRadius = percent * effectSliders[EFFECT_SLIDERS.MAX_RADIUS];
+						ctx.beginPath();
+						ctx.fillStyle = makeColor(255, 128, 0, 0.34 - percent/3.0);
+						ctx.arc(canvas.width/2, 267, circleRadius, 0, 2 * Math.PI, false);
+						ctx.fill();
+						ctx.closePath();
+
+						// Blue-ish circles, bigger, more transparent
+						ctx.beginPath();
+						ctx.fillStyle = makeColor(255, 0, 0, 0.10 - percent/10.0);
+						ctx.arc(canvas.width/2, 267, circleRadius * 1.5, 0, 2 * Math.PI, false);
+						ctx.fill();
+						ctx.closePath();
+
+						// Yellowish circles, smaller
+						ctx.save();
+						ctx.beginPath();
+						ctx.fillStyle = makeColor(255, 255, 0, 0.5 - percent/5.0);
+						ctx.arc(canvas.width/2, 267, circleRadius * 0.50, 0, 2 * Math.PI, false);
+						ctx.fill();
+						ctx.closePath();
+						ctx.restore();
+					}
+
+					else if(ampEffect == AMP_EFFECTS.BEZIER){
+						var nodeSpacing = 3;
+						var topSpacing = 80;
+
+						if(!effectBools[EFFECT_BOOLS.USE_GRADIENT]){
+							ctx.strokeStyle = "red";
+						}
+						else{
+							var myGrad = ctx.createLinearGradient(0, topSpacing + 256, 0, 154);
+							myGrad.addColorStop(0, "#0000FF");
+							myGrad.addColorStop(0.5, "#00FF00");
+							myGrad.addColorStop(1, "#FF0000");
+
+							ctx.strokeStyle = myGrad;
+						}
+
+						ctx.lineWidth = 2;
+
+						// Draw some bezier curves!
+						// Much like the rectangles, we scale down vertically so we don't go off the top
+						ctx.beginPath();
+						ctx.moveTo((i * nodeSpacing) + 197, topSpacing + 256 - (data[i] * 0.7));
+						ctx.quadraticCurveTo(((i + 1) * nodeSpacing) + 197, topSpacing + 256 - (data[i + 1] * 0.7), ((i + 2) * nodeSpacing) + 197, topSpacing + 256 - (data[i + 2] * 0.7));
+						ctx.stroke();
+
+						// Since the bezier curves nab more than one data value at a time, we can skip a loop iteration!
+						i++;
+					}
+				}	
+			}
+
+			manipulatePixels();
+
+			// END DRAWING //
+
+			// Apply audio effects
+			lowShelfNode.gain.value = effectSliders[EFFECT_SLIDERS.BASS_BOOST];
+			delayNode.delayTime.value = effectSliders[EFFECT_SLIDERS.DELAY];
+		};
+
+		// Apply any per-pixel effects
+		function manipulatePixels(){
+			// i) Get all of the rgba pixel data of the canvas by grabbing the 
+			// ImageData Object
+			// https://developer.mozilla.org/en-US/docs/Web/API/ImageData
+			var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+			// ii) imageData.data is an 8-bit typed array - values range from 0-255
+			// imageData.data contains 4 values per pixel: 4 x canvas.width x
+			// canvas.height = 1024000 values!
+			// We're looping through this 60 FPS - wow!
+			var data = imageData.data;
+			var length = data.length;
+			var width = imageData.width;
+			var height = imageData.height;
+
+			// iii) Iterate through each pixel
+			// we step by 4 so that we can manipulate 1 pixel per iteration
+			// data[i] = red
+			// data[i + 1] = green
+			// data[i + 2] = blue
+			// data[i + 3] = alpha channel
+
+			for(var i = 0; i < length; i += 4){
+				// BONUS: Cool raster distortion effect; Seeing Double!
+				// I gave this vertical distortion effect my best college try, but it just didn't want to work
+				// I even tried refactoring the whole effect to never work ahead, but I couldn't get it to function as smoothly
+				if(effectBools[EFFECT_BOOLS.DISTORTION]){
+					// Vertical Distortion
+					if(effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] > 0){
+						var row = Math.floor(i/4/width);
+						var column = (i % (width * 4)) / 4;
+
+						// We want to offset adjacent columns in opposite directions to achieve the effect
+						if((column % 2) == 0){
+							// If we're trying to sample pixels that are "off-screen", just overwrite with black
+							if(height - row <= effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] / 4){
+								data[i] =
+								data[i + 1] =
+								data[i + 2] =
+								data[i + 3] = 0;
+							}
+
+							// Shifting the image up; grab the pixel that's [effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]] pixels down.
+							else{
+								data[i] =
+								data[((i + (effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] * width)) % length)];
+
+								data[i + 1] =
+								data[((i + (effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] * width)) % length) + 1];
+
+								data[i + 2] =
+								data[((i + (effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] * width)) % length) + 2];
+
+								data[i + 3] =
+								data[((i + (effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] * width)) % length) + 3];
+							}
+						}
+						else{
+							// Overwriting "off-screen" pixels
+							if(height - row <= effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL] / 4){
+								data[((length - 4) - i) + 4] =
+								data[((length - 4) - i) + 5] =
+								data[((length - 4) - i) + 6] =
+								data[((length - 4) - i) + 7] = 0;
+							}
+
+							// Shifting the image down; Moving from the bottom-right of the image
+							// Grab the pixel that's [effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]] pixels up.
+							else{
+								data[((length - 4) - i) + 4] =
+								data[((length - 4) - i) - (width * effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]) + 4];
+
+								data[((length - 4) - i) + 5] =
+								data[((length - 4) - i) - (width * effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]) + 5];
+
+								data[((length - 4) - i) + 6] =
+								data[((length - 4) - i) - (width * effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]) + 6];
+
+								data[((length - 4) - i) + 7] =
+								data[((length - 4) - i) - (width * effectSliders[EFFECT_SLIDERS.DISTORTION_VERTICAL]) + 7];
+							}
+						}
+					}
+					
+					// Horizontal Distortion
+					if(effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] > 0){
+						var row = Math.floor(i/4/width);
+
+						// We want to offset adjacent rows in opposite directions to achieve the effect
+						if((row % 2) == 0){
+							// If we're trying to sample pixels that are "off-screen", just overwrite with black
+							if(width - ((i / 4) % width) <= (effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] / 4)){
+								data[i] =
+								data[i + 1] =
+								data[i + 2] =
+								data[i + 3] = 0;
+							}
+
+							// Shifting the image left; grab the pixel that's [effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL]] pixels to the right.
+							else{
+								data[i] = data[i + effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL]];
+								data[i + 1] = data[i + effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 1];
+								data[i + 2] = data[i + effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 2];
+								data[i + 3] = data[i + effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 3];
+							}
+						}
+						else{
+							// Overwriting "off-screen" pixels
+							if(width - ((i / 4) % width) <= (effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] / 4)){
+								data[((length - 4) - i + (width * 4))] =
+								data[((length - 4) - i + (width * 4)) + 1] =
+								data[((length - 4) - i + (width * 4)) + 2] =
+								data[((length - 4) - i + (width * 4)) + 3] = 0;
+							}
+
+							// Shifting the image right; Moving from the bottom-right of the image
+							// Grab the pixel that's [effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL]] pixels to the left.
+							else{
+								data[((length - 4) - i + (width * 4))] = data[((length - 4) - i + (width * 4)) - effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL]];
+								data[((length - 4) - i + (width * 4)) + 1] = data[((length - 4) - i + (width * 4)) - effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 1];
+								data[((length - 4) - i + (width * 4)) + 2] = data[((length - 4) - i + (width * 4)) - effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 2];
+								data[((length - 4) - i + (width * 4)) + 3] = data[((length - 4) - i + (width * 4)) - effectSliders[EFFECT_SLIDERS.DISTORTION_HORIZONTAL] + 3];
+							}
+						}
+					}
+				}
+
+				// iv) Increase red value only
+				if(effectBools[EFFECT_BOOLS.TINT_RED]){
+					// just the red channel this time
+					data[i] = data[i] + 100;
+				}
+
+				// v) invert every color channel
+				if(effectBools[EFFECT_BOOLS.INVERT]){
+					var red = data[i], green = data[i + 1], blue = data[i + 2];
+					data[i] = 255 - red;
+					data[i + 1] = 255 - green;
+					data[i + 2] = 255 - blue;
+					// We aren't messing with the alpha channel for hopefully obvious reasons
+				}
+
+				// vi) noise
+				if(effectBools[EFFECT_BOOLS.NOISE] && Math.random() < 0.10){
+					data[i] = data[i + 1] = data[i + 2] = 128;	// gray noise
+
+					// data[i] = data[i + 1] = data[i + 2] = 255;	// white noise
+					// data[i] = data[i + 1] = data[i + 2] = 0;	// black noise
+
+					// Uncomment this line to draw noise on the black areas
+					// data[i + 3] = 255;
+				}
+
+				// vii) draw 2-pixel lines every 50 rows
+				if(effectBools[EFFECT_BOOLS.LINES]){
+					var row = Math.floor(i/4/width);
+					if(row % 50 == 0){
+						data[i] = data[i + 1] = data[i + 2] = data[i + 3] = 255;
+
+						// Took me a minute to realize why this draws black sometimes:
+						// It's only because of the inverted colors filter!
+						data[i + (width * 4)] =
+						data[i + (width * 4) + 1] =
+						data[i + (width * 4) + 2] =
+						data[i + (width * 4) + 3] = 255;
+					}
+				}
+			}
+
+			// Put the modified data back on the canvas
+			ctx.putImageData(imageData, 0, 0);
+		};
+		
+		// HELPER
+		function makeColor(red, green, blue, alpha){
+   			var color='rgba('+red+','+green+','+blue+', '+alpha+')';
+   			return color;
+		};
+		
+		 // FULL SCREEN MODE
+		function requestFullscreen(element) {
+			if (element.requestFullscreen) {
+			  element.requestFullscreen();
+			} else if (element.mozRequestFullscreen) {
+			  element.mozRequestFullscreen();
+			} else if (element.mozRequestFullScreen) { // camel-cased 'S' was changed to 's' in spec
+			  element.mozRequestFullScreen();
+			} else if (element.webkitRequestFullscreen) {
+			  element.webkitRequestFullscreen();
+			}
+			// .. and do nothing if the method is not supported
+		};
+		
+		// Make sure that the init() function is called when the page is done loading
+		window.addEventListener("load",init);
+	}());
+		
+	</script>
+</head>
+<body>
+	<!-- Loading images for the canvases (is that the correct pluralization???) -->
+	<img id="bassImg" src="Bass.png" style="display:none" />
+	<img id="ampImg" src="Amp.png" style="display:none" />
+
+	<header>
+		<h1>Bass Guitar Visualizer</h1>
+	</header>
+
+	<section id="visualizer">
+		<canvas id="canvas2" title="Click me to switch views!" width="128" height="80"></canvas><br>
+		<canvas id="canvas" width="640" height="400"></canvas>
+	</section>
+
+	<section id="controls">
+		<button id="fsButton">Go Full Screen</button><br><br>
+		<section id="musicControls">
+			<audio controls loop></audio><br><br>
+			<label>Track: 
+				<select id="trackSelect" >
+					<option value="media/☆ＳＥＩＮＷＡＶＥ☆２０００☆.mp3" selected>☆ＳＥＩＮＷＡＶＥ☆２０００☆</option>
+					<option value="media/The Doomsday.mp3">The Doomsday</option>
+					<option value="media/Artificial Intelligence Bomb.mp3">Artificial Intelligence Bomb</option>
+				</select>
+			</label>
+		</section>
+
+		<section id="effectsDiv" style="display: flex">
+			<section id="genVisualEffectsDiv" style="flex: 1">
+
+				<header>
+					<h2>General Visual Effects:</h2>
+				</header>
+
+				<label>Red Tint:
+					<input type="checkbox" id="redTintCheck">
+				</label>
+				<label>Invert Colors:
+					<input type="checkbox" id="invertCheck">
+				</label>
+				<label>Noise:
+					<input type="checkbox" id="noiseCheck">
+				</label>
+				<label>Lines:
+					<input type="checkbox" id="linesCheck">
+				</label><br><br>
+				<label>"Seeing Double" Distortion:
+					<input type="checkbox" id="distortionCheck"><br>
+				</label>
+				<label><!-- Horizontal: -->
+					<input type="range" min="0" max="640" step="4" value="0"/>
+				</label>
+				<label style="display: none">Vertical:
+					<input type="range" min="0" max="400" step="4" value="0"/>
+				</label>
+			</section>
+
+			<br>
+
+			<section id="audioEffectsDiv" style="flex: 1">
+
+				<header>
+					<h2>Audio Effects:</h2>
+				</header>
+
+				<label>Bass Boost:
+						<input id="boostSlider" type="range" min="0.0" max="20.0" step="1.0" value="0.0" />
+				</label><br>
+				<label>Audio Delay:
+					<input id="delaySlider" type="range" min="0.0" max="1.0" step="0.1" value="0.0" />
+				</label>
+			</section>
+			
+			<br>
+
+			<section id="bassEffectsDiv" style="flex: 1">
+
+				<header>
+					<h2>Bass Guitar Effects:</h2>
+				</header>
+
+				<label>Weighted Strum:
+					<input type="checkbox" id="strumCheck">
+				</label>
+				<label>Divide waveform:
+					<input type="checkbox" id="divideCheck">
+				</label>
+			</section>
+			
+			<br>
+
+			<section id="ampEffectsDiv" style="display: none; flex: 1">
+
+				<header>
+					<h2>Bass Amp Effects:</h2>
+				</header>
+
+				<label>Visualizer:
+					<select id="ampEffectSelect">
+						<option value="rectangles" selected>Rectangles</option>
+						<option value="circles">Circles</option>
+						<option value="bezier">Bezier Curves</option>
+					</select>
+				</label>
+
+				<br><br>
+				
+				<label id="radiusLabel" style="display: none">Circle Radius:
+					<input id="radiusSlider" type="range" min="0" max="80" step="10" value="40"/>
+				</label>
+
+				<label id="gradientLabel">Gradient Fill:
+					<input id="gradientCheck" type="checkBox">
+				</label>
+			</section>
+		</section>
+
+		<p id="status">???</p>
+	</section>
+</body>
+</html>

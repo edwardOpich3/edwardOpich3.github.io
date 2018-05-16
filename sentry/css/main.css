@@ -1,0 +1,44 @@
+/*
+    main.css
+    Written by Edward Opich
+    Last modified 3/30/18
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono');
+/* 'Share Tech Mono' */
+
+body
+{
+    text-align: center;
+    font-family: "Share Tech Mono", "monospace";
+}
+
+p
+{
+    font-size: 16pt;
+}
+
+canvas
+{
+    background: #000;
+}
+
+#audioControls
+{
+    display: none;
+}
+
+#instructions
+{
+    margin: 0 auto;
+
+    /* https://stackoverflow.com/questions/9902978/prevent-css-being-overwriten */
+    width: auto !important; /* Why on earth do I have to put an !important tag here for this to work (in Firefox, at least)??? */
+
+    /*border: 1px solid black;*/
+}
+
+#instructions section p
+{
+    text-align: center;
+}
