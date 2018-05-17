@@ -31,7 +31,11 @@ window.onload = function(){
 	xhr.onload = function(){
 		var header = document.querySelector(".header");
 
-		header.innerHTML = xhr.responseXML.querySelector("body").innerHTML;
+		var parser = new DOMParser();
+		var navBar = parser.parseFromString(xhr.responseText, "text/html");
+		navBar = navBar.querySelector("body").innerHTML;
+		
+		header.innerHTML = navBar;
 
 		menus = header.querySelector("#popups").children;
 	};
