@@ -2,8 +2,10 @@
 
 var menus;
 
-function popupMenu(clickedButton)
+function popupMenu(e, clickedButton)
 {
+	e.preventDefault();
+
 	if(menus == null)
 	{
 		menus = document.getElementById("popups").children;
@@ -23,24 +25,38 @@ function popupMenu(clickedButton)
 	menus[clickedButton].style.display = "inline-block";
 }
 
-window.onload = function(){
+function loadContent(e){
+	e.preventDefault();
+	var url = e.target.getAttribute("href");
+
 	var xhr = new XMLHttpRequest();
 
-	xhr.open("GET", "navigation.html");
+	xhr.open("GET", url);
 
 	xhr.onload = function(){
-		var header = document.querySelector(".header");
+		var contentDiv = document.querySelector(".content");
 
 		var parser = new DOMParser();
-		var navBar = parser.parseFromString(xhr.responseText, "text/html");
-		navBar = navBar.querySelector("body").innerHTML;
+		var loaded = parser.parseFromString(xhr.responseText, "text/html");
 		
-		header.innerHTML = navBar;
-
-		menus = header.querySelector("#popups").children;
+		contentDiv.innerHTML = loaded.body.innerHTML;
 	};
 
 	xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
 
 	xhr.send();
+
+	if(menus == null){
+		menus = document.querySelector("#popups").children;
+	}
+
+	for(var i = 0; i < menus.length; i++){
+		menus[i].style.display = "none";
+	}
+}
+
+window.onload = function(){
+	// https://stackoverflow.com/questions/136617/how-do-i-programmatically-force-an-onchange-event-on-an-input
+	var e = new Event("click");
+	document.querySelector("a").dispatchEvent(e);
 };
