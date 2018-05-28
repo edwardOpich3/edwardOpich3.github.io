@@ -25,9 +25,15 @@ function popupMenu(e, clickedButton)
 	menus[clickedButton].style.display = "inline-block";
 }
 
-function loadContent(e){
+function pageNav(e){
 	e.preventDefault();
-	var url = e.target.getAttribute("href");
+	loadContent(e.target.getAttribute("href"));
+}
+
+function loadContent(url){
+	window.location.hash = url;
+
+	url += ".html";
 
 	var xhr = new XMLHttpRequest();
 
@@ -42,6 +48,14 @@ function loadContent(e){
 		contentDiv.innerHTML = loaded.body.innerHTML;
 	};
 
+	xhr.onerror = function(){
+		var contentDiv = document.querySelector(".content");
+
+		contentDiv.innerHTML =
+		"<p><b>ERROR: </b>The requested content could not be found.</p>" + 
+		"<a href='home' onclick='pageNav(event)'>Back Home</a>";
+	}
+
 	xhr.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2010 00:00:00 GMT");
 
 	xhr.send();
@@ -55,8 +69,17 @@ function loadContent(e){
 	}
 }
 
-window.onload = function(){
-	// https://stackoverflow.com/questions/136617/how-do-i-programmatically-force-an-onchange-event-on-an-input
-	var e = new Event("click");
-	document.querySelector("a").dispatchEvent(e);
-};
+function stateHandler(){
+	var url = window.location.hash.substring(1);
+
+	if(url == ""){
+		loadContent("home");	
+	}
+
+	else{
+		loadContent(url);
+	}
+}
+
+window.onload = stateHandler;
+window.onpopstate = stateHandler;
